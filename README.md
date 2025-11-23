@@ -1,7 +1,7 @@
 # SAP Outbound Shipping Automation Tool
 
 <p align="center">
-  <img src="automation-tool.png" width="600" title="SAP Automation Tool Interface">
+  <img src="automation-tool.png" width="1000" title="SAP Automation Tool Interface">
 </p>
 
 ## Project Overview
