@@ -1,5 +1,9 @@
 # SAP Outbound Shipping Automation Tool
 
+<p align="center">
+  <img src="automation-tool.png" width="600" title="SAP Automation Tool Interface">
+</p>
+
 ## Project Overview
 This tool is a robust **Business Process Automation (BPA)** solution designed to streamline outbound shipping operations within **SAP GUI**. Written in **VBScript**, it interacts directly with the SAP Scripting API to automate repetitive data entry, document generation, and handling unit creation.
 
