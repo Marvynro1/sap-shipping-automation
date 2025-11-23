@@ -1,46 +1,40 @@
-# SAP Outbound Shipping Automation Tool
+# SAP Outbound Shipping Automation
 
 <p align="center">
-  <img src="automation-tool.png" width="1000" title="SAP Automation Tool Interface">
+  <img src="automation-tool.png" width="1000" title="SAP Shipping Tool Interface">
 </p>
 
-## Project Overview
-This tool is a robust **Business Process Automation (BPA)** solution designed to streamline outbound shipping operations within **SAP GUI**. Written in **VBScript**, it interacts directly with the SAP Scripting API to automate repetitive data entry, document generation, and handling unit creation.
+## Context & Impact
+I developed this automation tool for the outbound shipping team at a Fortune 200 manufacturing company. Our manual process in SAP GUI was repetitive and prone to minor data entry errors.
 
-The tool employs a **Human-in-the-Loop (HITL)** architecture: it handles the high-volume, repetitive "grunt work" of SAP navigation and data entry, but returns control to the analyst for the final critical validation (BOL and PGI), reducing processing time while maintaining data integrity.
+Originally built to streamline my own workflow, the tool was subsequently reviewed by the Lead Logistics Manager and **adopted by the wider shipping department.** It now serves as the standard utility for processing outbound deliveries, ensuring consistent documentation and faster processing times across the team.
 
-## Key Features
+## What It Actually Does
+The tool acts as a "force multiplier" for the shipping team. Instead of manually navigating transaction code `VL02N` (Change Outbound Delivery) for every single order, the script:
 
-### 1. Dynamic Workflow Logic
-The script adapts its execution path based on user input, handling three distinct operational scenarios:
-* **Full Documentation:** Checks for existing invoices, offers to reprint or generate new ones, and creates packing lists.
-* **Packing List Only:** Skips financial document generation when only logistical documents are needed.
-* **BOL Only:** Automates the packing process but skips all printing services for specific freight scenarios.
+1.  **Standardizes Input:** A unified GUI prompts the user for Delivery Number, weights, dims, and document counts, ensuring data consistency across all analysts.
+2.  **Automates Logic:**
+    * **Plant Determination:** It automatically detects if the order is from Plant 1812 or 1814 and selects the strictly required SAP Output Type (`ZPL0` vs `YPLA`).
+    * **Smart Routing:** It dynamically switches between "Full Documentation," "Packing List Only," or "BOL Only" modes based on the user's input, skipping unnecessary SAP screens to save time.
+3.  **Executes:** It handles the tedious creation of Handling Units (HU), assigns physical specs, and triggers the print jobs.
+4.  **Handoff:** It exports PDF paperwork to a standardized OneDrive path and hands control back to the user for the final "Post Goods Issue" (PGI), maintaining a "Human-in-the-Loop" workflow for safety and validation.
 
-### 2. Enterprise-Grade Error Handling & Resilience
-Unlike simple linear scripts, this tool is built for production stability:
-* **Connection Healing:** Automatically detects dropped SAP sessions and attempts to reconnect or refresh the transaction to prevent crashes.
-* **Memory Management:** Includes a garbage collection subroutine to release resources, preventing the memory leaks common in long-running SAP GUI sessions.
-* **Pop-up Handling:** Automatically detects and dismisses nuisance pop-ups (e.g., Serial Number or Country of Origin warnings) by reading the SAP status bar.
+## Technical Challenges (Production-Ready Code)
+Because this tool is used by multiple team members in a live production environment, it had to be crash-proof. I implemented several resilience features to handle the unpredictability of SAP:
 
-### 3. Smart Data Validation
-* **Plant Logic:** Automatically determines the correct SAP Output Type (e.g., `ZPL0` vs `YPLA`) based on the user's plant selection.
-* **Input Validation:** Prevents downstream SAP errors by validating delivery numbers and dimensions before the automation sequence begins.
+### 1. Handling "Random" SAP Pop-ups
+Different materials trigger different warnings in SAP (e.g., "Missing Country of Origin" or "Serial Number" checks). I wrote logic that actively monitors the SAP Status Bar and dismisses these pop-ups automatically so the automation doesn't hang on a user's screen.
 
-## Technical Implementation
-* **Language:** VBScript (Windows Script Host)
-* **Integration:** SAP GUI Scripting API
-* **Key Methods:** `FindById`, `GetScriptingEngine`, `FileSystemObject`
+### 2. Memory Leaks & Garbage Collection
+SAP GUI sessions often degrade over time during high-volume processing. I implemented a `CleanupMemory` subroutine that forces garbage collection and, if necessary, auto-refreshes the SAP session after a set number of transactions to prevent memory leaks during long shifts.
 
-## How It Works
-1.  **Data Collection:** The user inputs the Delivery Number, Weights, Dims, and Document Counts via a GUI prompt.
-2.  **Decision Engine:** The script determines the correct routing (New Invoice, Reprint, or Pack Only).
-3.  **Execution:**
-    * Navigates to Transaction `VL02N` (Change Outbound Delivery).
-    * Packs materials into Handling Units (HU) with precise weight/dim data.
-    * Triggers output generation for Packing Lists and Commercial Invoices.
-    * Exports PDFs to a local OneDrive directory using the SAP Generic Object Services (GOS).
-4.  **Handoff:** The script terminates at the Shipment Header tab, allowing the analyst to attach the signed BOL and finalize the Post Goods Issue (PGI).
+### 3. Connection "Healing"
+If a user's SAP session drops or freezes, the script detects the broken object reference and attempts to reconnect to the active session automatically, minimizing downtime and frustration for the user.
 
-## Disclaimer
-This script is a portfolio demonstration of SAP automation techniques. It is designed for a specific SAP environment configuration and would require adaptation for use in other enterprise systems.
+## Tech Stack
+* **Language:** VBScript (Native language for SAP GUI Scripting)
+* **Interface:** SAP GUI Scripting API
+* **Deployment:** Shared Internal Tool
+
+---
+*Disclaimer: This code is tailored to a specific SAP environment configuration (transaction flows, screen IDs, and plant codes). It serves as a demonstration of business process automation and error handling techniques.*
